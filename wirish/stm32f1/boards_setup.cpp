@@ -40,7 +40,8 @@
 #include <libmaple/timer.h>
 
 #include <wirish/boards.h>
-#include <wirish/usb_serial.h>
+//#include <wirish/usb_serial.h>
+#include <wirish/usb_midi.h>
 
 // Allow boards to provide a PLL multiplier. This is useful for
 // e.g. STM32F100 value line MCUs, which use slower multipliers.
@@ -74,8 +75,8 @@ namespace wirish {
         }
 
         __weak void board_setup_usb(void) {
-#if BOARD_HAVE_SERIALUSB
-            SerialUSB.begin();
+#if BOARD_HAVE_MIDIUSB
+            MidiUSB.begin();
 #endif
         }
 

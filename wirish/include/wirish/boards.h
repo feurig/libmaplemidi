@@ -170,4 +170,8 @@ bool boardUsesPin(uint8 pin);
 #define BOARD_HAVE_SERIALUSB (defined(BOARD_USB_DISC_DEV) && \
                               defined(BOARD_USB_DISC_BIT))
 
+//#define BOARD_HAVE_MIDIUSB (defined(MIDIUSB)&&defined(BOARD_USB_DISC_DEV) && \
+//                              defined(BOARD_USB_DISC_BIT))
+#define BOARD_HAVE_MIDIUSB 1
+
 #endif
