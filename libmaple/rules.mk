@@ -34,6 +34,8 @@ cSRCS_$(d) += i2c.c
 endif
 
 # CLUDGE -- FIX ME!!!!
+cSRCS_$(d) += MinSysex.c
+
 
 cFILES_$(d) := $(cSRCS_$(d):%=$(d)/%)
 sFILES_$(d) := $(sSRCS_$(d):%=$(d)/%)
