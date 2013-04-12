@@ -33,6 +33,8 @@ ifeq ($(MCU_SERIES),stm32f1)
 cSRCS_$(d) += i2c.c
 endif
 
+# CLUDGE -- FIX ME!!!!
+
 cFILES_$(d) := $(cSRCS_$(d):%=$(d)/%)
 sFILES_$(d) := $(sSRCS_$(d):%=$(d)/%)
 

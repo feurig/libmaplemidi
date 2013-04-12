@@ -39,6 +39,7 @@
 #include <libmaple/gpio.h>
 #include <libmaple/usb.h>
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -169,6 +170,13 @@ typedef struct {
 #endif
 
 /*
+ * Sysex Stuff.
+ */
+ 
+#define SYSEX_BUFFER_LENGTH 256
+
+    
+ /*
  * MIDI interface
  */
 

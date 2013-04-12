@@ -35,6 +35,7 @@
  */
 
 #include <libmaple/usb_midi_device.h>
+#include <MinSysex.h>
 
 #include <libmaple/usb.h>
 #include <libmaple/nvic.h>
@@ -88,6 +89,8 @@ static void usbSetDeviceAddress(void);
 /* FIXME move to Wirish */
 #define LEAFLABS_ID_VENDOR                0x1EAF
 #define MAPLE_ID_PRODUCT                  0x0014
+/* 0x7D = ED/FREE next two DIGITS MUST BE LESS THAN 0x7f */
+
 static const usb_descriptor_device usbMIDIDescriptor_Device =
     USB_MIDI_DECLARE_DEV_DESC(LEAFLABS_ID_VENDOR, MAPLE_ID_PRODUCT);
 
@@ -531,15 +534,18 @@ static void midiDataTxCb(void) {
 }
 
 static void midiDataRxCb(void) {
+    
     usb_set_ep_rx_stat(USB_MIDI_RX_ENDP, USB_EP_STAT_RX_NAK);
     n_unread_bytes = usb_get_ep_rx_count(USB_MIDI_RX_ENDP);
     /* This copy won't overwrite unread bytes, since we've set the RX
      * endpoint to NAK, and will only set it to VALID when all bytes
      * have been read. */
+    
     usb_copy_from_pma((uint8*)midiBufferRx, n_unread_bytes,
                       USB_MIDI_RX_ADDR);
-
-
+    
+    LglSysexHandler(midiBufferRx,&rx_offset,&n_unread_bytes);
+    
     if (n_unread_bytes == 0) {
         usb_set_ep_rx_count(USB_MIDI_RX_ENDP, USB_MIDI_RX_EPSIZE);
         usb_set_ep_rx_stat(USB_MIDI_RX_ENDP, USB_EP_STAT_RX_VALID);
