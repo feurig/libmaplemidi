@@ -133,6 +133,17 @@ typedef struct // may need to be adjusted for other compilers and bitfield order
 #define MIDIv1_UNIVERSAL_REALTIME_ID     0x7F
 #define MIDIv1_UNIVERSAL_NON_REALTIME_ID 0x7E
 #define MIDIv1_UNIVERSAL_ALL_CHANNELS    0x7F
+/*
+ * Susbset of universal sysex (general info request)
+ * As described http://www.blitter.com/~russtopia/MIDI/~jglatt/tech/midispec.htm
+ */
+#define USYSEX_NON_REAL_TIME    0x7E
+#define USYSEX_REAL_TIME        0x7F
+#define USYSEX_ALL_CHANNELS     0x7F
+#define USYSEX_GENERAL_INFO     0x06
+#define USYSEX_GI_ID_REQUEST    0x01
+#define USYSEX_GI_ID_RESPONSE   0x02
+
 
 #endif
 
