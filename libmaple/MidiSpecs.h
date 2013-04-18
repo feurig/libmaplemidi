@@ -127,6 +127,13 @@ typedef struct // may need to be adjusted for other compilers and bitfield order
 #define MIDIv1_ACTIVE_SENSE      0xFE /* no data -- CIN_1BYTE */
 #define MIDIv1_RESET             0xFF /* no data -- CIN_1BYTE */
 
+/*
+ * sysex universal id's 
+ */
+#define MIDIv1_UNIVERSAL_REALTIME_ID     0x7F
+#define MIDIv1_UNIVERSAL_NON_REALTIME_ID 0x7E
+#define MIDIv1_UNIVERSAL_ALL_CHANNELS    0x7F
+
 #endif
 
 

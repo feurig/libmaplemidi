@@ -350,6 +350,13 @@ static volatile uint8 transmitting = 0;
 /* Number of unread bytes */
 static volatile uint32 n_unread_bytes = 0;
 
+
+// eventually all of this should be in a place for settings which can be written to flash.
+volatile uint8 myMidiChannel = DEFAULT_MIDI_CHANNEL;
+volatile uint8 myMidiDevice = DEFAULT_MIDI_DEVICE;
+volatile uint8 myMidiCable = DEFAULT_MIDI_CABLE;
+volatile uint8 myMidiID[] = { LEAFLABS_MMA_VENDOR_1,LEAFLABS_MMA_VENDOR_2,LEAFLABS_MMA_VENDOR_3,0};
+
 /*
  * Endpoint callbacks
  */
