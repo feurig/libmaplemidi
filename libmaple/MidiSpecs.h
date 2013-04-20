@@ -38,13 +38,14 @@
 #define __LETS_MIDI_SPECS_H__
 #include <stdint.h>
 #include <stdbool.h>
-
+// rework this for the different architectures....
 #if defined(__GNUC__)
 typedef struct 
 {
-    unsigned cable : 4;
-    unsigned cin   : 4; // this is the low nibble.
-    uint8_t  midi0; 
+    unsigned cin : 4;  // this is the low nibble.
+    unsigned cable  : 4;
+//    uint8_t  cin;
+    uint8_t  midi0;
     uint8_t  midi1; 
     uint8_t  midi2; 
 }  __attribute__ ((__packed__)) MIDI_EVENT_PACKET_t ;

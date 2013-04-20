@@ -146,8 +146,9 @@ void dealWithItQuickly(){
 
 void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_bytes) {
     MIDI_EVENT_PACKET_t * midiPackets = (MIDI_EVENT_PACKET_t *) (midiBufferRx+(*rx_offset));
-    uint8 nPackets=(*n_unread_bytes)-(*rx_offset);
+    uint8 nPackets=((*n_unread_bytes)-(*rx_offset))/4;
     int cPacket;
+    uint8 soPackets=0;
     /********************************* ACHTUNG! ignores usbmidi cable ********************************/
     MIDI_EVENT_PACKET_t *packet;
     for (cPacket=0;cPacket<nPackets;cPacket++){
@@ -155,6 +156,12 @@ void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_byte
         if (!CIN_IS_SYSEX(packet->cin)) {
             continue;
         } // else {
+        if (!soPackets) {
+            soPackets=cPacket*4;
+        }
+        if ((sysexState==YUP_ITS_MY_SYSEX) && ((sysexFinger+3)>=MAX_SYSEX_SIZE)){
+            sysexState=ITS_NOT_MY_SYSEX;  //eisenhower policy. Even if its mine I cant deal with it. 
+        }
         switch (packet->cin) {
             case CIN_SYSEX:
                 switch (sysexState) {
@@ -207,9 +214,30 @@ void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_byte
                 sysexBuffer[sysexFinger++]=packet->midi0;
                 sysexBuffer[sysexFinger++]=packet->midi1;
                 sysexBuffer[sysexFinger++]=packet->midi2;
-                // sysexState=I_GOT_MY_SYSEX;
-                // flag it or something for retrieval later.
-                dealWithItQuickly();
+                if (sysexState==YUP_ITS_MY_SYSEX) {
+                    if((cPacket*4)>=(*n_unread_bytes)){
+                        *n_unread_bytes = soPackets;
+                        *rx_offset = soPackets;
+                    } else {
+                        uint8 c = cPacket*4;
+                        uint8 *s;
+                        uint8 *d = midiBufferRx + soPackets;
+                        for (s = midiBufferRx+c;
+                             ((*n_unread_bytes) && (s <= midiBufferRx+USB_MIDI_RX_EPSIZE));
+                             d++,s++
+                            ) {
+                                (*d)=(*s);
+                                (*n_unread_bytes)--;
+                                (*rx_offset)++;
+                        
+                            }
+                        // we need to reset the for loop variables to re process remaining data.
+                        nPackets=((*n_unread_bytes)-(*rx_offset))/4;
+                        cPacket=(*rx_offset)/4;                        
+                    }
+                    dealWithItQuickly();
+                    
+                }
                 sysexFinger=0;
                 sysexState=NOT_IN_SYSEX;
 
