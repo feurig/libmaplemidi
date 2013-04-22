@@ -4,7 +4,7 @@
 //
 //  Created by Donald D Davis on 4/11/13.
 //  Copyright (c) 2013 Suspect Devices. All rights reserved.
-//
+//  Modified BSD Liscense 
 /*
  0xF0  SysEx
  0x7E  Non-Realtime
@@ -72,7 +72,7 @@ const uint8 standardIDResponse[]={
 };
 //#define STANDARD_ID_RESPONSE_LENGTH (sizeof(standardIDResponse))
 
-typedef enum  {NOT_IN_SYSEX=0,IN_SYSEX,COULD_BE_MY_SYSEX,YUP_ITS_MY_SYSEX,ITS_NOT_MY_SYSEX,I_GOT_MY_SYSEX} sysexStates;
+typedef enum  {NOT_IN_SYSEX=0,COULD_BE_MY_SYSEX,YUP_ITS_MY_SYSEX,ITS_NOT_MY_SYSEX} sysexStates;
 volatile uint8 sysexBuffer[MAX_SYSEX_SIZE];
 volatile sysexStates sysexState;
 volatile int sysexFinger=0;
@@ -97,7 +97,13 @@ static void wait_reset(void) {
     nvic_sys_reset();
 }
 
-
+/* -----------------------------------------------------------------------------dealWithItQuickly()
+ * Note: at this point we have established that the sysex belongs to us.
+ * So we need to respond to any generic requests like information requests.
+ * We also need to handle requests which are meant for us. At the moment this is just the 
+ * reset request. 
+ * 
+ */
 void dealWithItQuickly(){
     switch (sysexBuffer[1]) {
         case USYSEX_NON_REAL_TIME:
@@ -144,6 +150,9 @@ void dealWithItQuickly(){
     ;//turn the led on?
 }
 
+/* -----------------------------------------------------------------------------LglSysexHandler()
+ * The idea here is to identify which Sysex's belong to us and deal with them.
+ */
 void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_bytes) {
     MIDI_EVENT_PACKET_t * midiPackets = (MIDI_EVENT_PACKET_t *) (midiBufferRx+(*rx_offset));
     uint8 nPackets=((*n_unread_bytes)-(*rx_offset))/4;
