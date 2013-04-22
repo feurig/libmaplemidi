@@ -30,6 +30,6 @@ extern volatile uint8 myMidiCable;
 extern volatile uint8 myMidiID[];
 
 
-void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_bytes);
+void LglSysexHandler(uint32 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_bytes);
 
 #endif

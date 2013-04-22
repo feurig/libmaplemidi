@@ -84,7 +84,7 @@ void USBMidi::write(const void *buf, uint32 len) {
     uint32 sent = 0;
 
     while (txed < len && (millis() - start < USB_TIMEOUT)) {
-        sent = usb_midi_tx((const uint8*)buf + txed, len - txed);
+        sent = usb_midi_tx((const uint32*)buf + txed, len - txed);
         txed += sent;
         if (old_txed != txed) {
             start = millis();
@@ -112,7 +112,7 @@ uint32 USBMidi::read(void *buf, uint32 len) {
 
     uint32 rxed = 0;
     while (rxed < len) {
-        rxed += usb_midi_rx((uint8*)buf + rxed, len - rxed);
+        rxed += usb_midi_rx((uint32*)buf + rxed, len - rxed);
     }
 
     return rxed;

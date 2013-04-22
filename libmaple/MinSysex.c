@@ -32,7 +32,7 @@
  0xF7  End of SysEx
 */
 // change this to packets
-#define STANDARD_ID_RESPONSE_LENGTH 24
+#define STANDARD_ID_RESPONSE_LENGTH 7
 
 #include <libmaple/usb_midi_device.h>
 #include <libmaple/nvic.h>
@@ -44,6 +44,39 @@
 #define MAX_SYSEX_SIZE 256
 
 /********************************* ACHTUNG! ignores usbmidi cable ********************************/
+/*const MIDI_EVENT_PACKET_t standardIDResponse[]={
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX,
+        MIDIv1_SYSEX_START,
+        USYSEX_NON_REAL_TIME,
+        USYSEX_ALL_CHANNELS},
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX,
+        USYSEX_GENERAL_INFO,
+        USYSEX_GI_ID_RESPONSE,
+        LEAFLABS_MMA_VENDOR_1},
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX,
+        LEAFLABS_MMA_VENDOR_2, // extended ID
+        LEAFLABS_MMA_VENDOR_3, // extended ID
+        1}, // family #1
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX,
+        2, // family #2
+        1, // part   #1
+        2}, // part   #2
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX,
+        0, // version 1
+        0, // version 2
+        1}, // version 3
+    { DEFAULT_MIDI_CABLE,
+        CIN_SYSEX_ENDS_IN_2,
+        '!', // lgl compatible
+        MIDIv1_SYSEX_END,
+        0}
+};
+*/
 const uint8 standardIDResponse[]={
     CIN_SYSEX,
     MIDIv1_SYSEX_START,
@@ -110,7 +143,7 @@ void dealWithItQuickly(){
             switch (sysexBuffer[3]) {
                 case USYSEX_GENERAL_INFO:
                     if (sysexBuffer[4]==USYSEX_GI_ID_REQUEST) {
-                        usb_midi_tx(standardIDResponse, STANDARD_ID_RESPONSE_LENGTH);
+                        usb_midi_tx((uint32 *) standardIDResponse, STANDARD_ID_RESPONSE_LENGTH);
                     }
             }
         case USYSEX_REAL_TIME:
@@ -153,9 +186,9 @@ void dealWithItQuickly(){
 /* -----------------------------------------------------------------------------LglSysexHandler()
  * The idea here is to identify which Sysex's belong to us and deal with them.
  */
-void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_bytes) {
+void LglSysexHandler(uint32 *midiBufferRx, uint32 *rx_offset, uint32 *n_unread_packets) {
     MIDI_EVENT_PACKET_t * midiPackets = (MIDI_EVENT_PACKET_t *) (midiBufferRx+(*rx_offset));
-    uint8 nPackets=((*n_unread_bytes)-(*rx_offset))/4;
+    uint8 nPackets=((*n_unread_packets)-(*rx_offset));
     int cPacket;
     uint8 soPackets=0;
     /********************************* ACHTUNG! ignores usbmidi cable ********************************/
@@ -224,25 +257,25 @@ void LglSysexHandler(uint8 *midiBufferRx,uint32 *rx_offset,uint32 *n_unread_byte
                 sysexBuffer[sysexFinger++]=packet->midi1;
                 sysexBuffer[sysexFinger++]=packet->midi2;
                 if (sysexState==YUP_ITS_MY_SYSEX) {
-                    if((cPacket*4)>=(*n_unread_bytes)){
-                        *n_unread_bytes = soPackets;
+                    if(cPacket>=(*n_unread_packets)){
+                        *n_unread_packets = soPackets;
                         *rx_offset = soPackets;
                     } else {
-                        uint8 c = cPacket*4;
-                        uint8 *s;
-                        uint8 *d = midiBufferRx + soPackets;
+                        uint8 c = cPacket;
+                        uint32 *s;
+                        uint32 *d = midiBufferRx + soPackets;
                         for (s = midiBufferRx+c;
-                             ((*n_unread_bytes) && (s <= midiBufferRx+USB_MIDI_RX_EPSIZE));
+                             ((*n_unread_packets) && (s <= midiBufferRx+(USB_MIDI_RX_EPSIZE/4)));
                              d++,s++
                             ) {
                                 (*d)=(*s);
-                                (*n_unread_bytes)--;
+                                (*n_unread_packets)--;
                                 (*rx_offset)++;
                         
                             }
                         // we need to reset the for loop variables to re process remaining data.
-                        nPackets=((*n_unread_bytes)-(*rx_offset))/4;
-                        cPacket=(*rx_offset)/4;                        
+                        nPackets=((*n_unread_packets)-(*rx_offset));
+                        cPacket=(*rx_offset);                        
                     }
                     dealWithItQuickly();
                     

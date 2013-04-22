@@ -184,9 +184,9 @@ void usb_midi_enable(gpio_dev*, uint8);
 void usb_midi_disable(gpio_dev*, uint8);
 
 void   usb_midi_putc(char ch);
-uint32 usb_midi_tx(const uint8* buf, uint32 len);
-uint32 usb_midi_rx(uint8* buf, uint32 len);
-uint32 usb_midi_peek(uint8* buf, uint32 len);
+uint32 usb_midi_tx(const uint32* buf, uint32 len);
+uint32 usb_midi_rx(uint32* buf, uint32 len);
+uint32 usb_midi_peek(uint32* buf, uint32 len);
 
 uint32 usb_midi_data_available(void); /* in RX buffer */
 uint16 usb_midi_get_pending(void);
