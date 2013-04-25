@@ -61,7 +61,7 @@
  *     public:
  *
  *     // Need this to compile; it just hands things off to the Midi class.
- *     MyMidi(HardwareSerial &s) : Midi(s) {}
+ *     MyMidi() : USBMidi(s) {}
  *
  *     void handleNoteOn(unsigned int channel, unsigned int note, unsigned int velocity)
  *     {
