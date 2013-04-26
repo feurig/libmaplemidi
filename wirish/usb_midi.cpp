@@ -25,6 +25,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  *
+ *  This is a munging of Tymm's arduino Midi Library into the Libusb class.
+ *  I am not sure this is the right way to go especially since its licensed differently.
+ *
  *  Midi.cpp: Code for MIDI processing library, Arduino version
  *
  *             (c) 2003-2008 Tymm Twillman <tymm@booyaka.com>
@@ -49,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @brief USB MIDI device
+ * @brief USB MIDI device with a class compatible with maplemidi
  */
 
 #include <wirish/usb_midi.h>
@@ -107,10 +110,6 @@ void USBMidi::end(void) {
 void USBMidi::writePacket(uint32 p) {
     this->writePackets(&p, 1);
 }
-
-//void USBMidi::write(const char *str) {
-//    this->write(str, strlen(str));
-//}
 
 void USBMidi::writePackets(const void *buf, uint32 len) {
     if (!this->isConnected() || !buf) {
@@ -183,25 +182,7 @@ USBMidi MidiUSB;
 static const int MODE_PROPRIETARY = 0xff;
 
 
-// These are midi status message types as sent on the wire
-static const int STATUS_EVENT_NOTE_OFF        = 0x80;
-static const int STATUS_EVENT_NOTE_ON         = 0x90;
-static const int STATUS_EVENT_VELOCITY_CHANGE = 0xA0;
-static const int STATUS_EVENT_CONTROL_CHANGE  = 0xB0;
-static const int STATUS_EVENT_PROGRAM_CHANGE  = 0xC0;
-static const int STATUS_AFTER_TOUCH           = 0xD0;
-static const int STATUS_PITCH_CHANGE          = 0xE0;
-static const int STATUS_START_PROPRIETARY     = 0xF0;
-static const int STATUS_SONG_POSITION         = 0xF2;
-static const int STATUS_SONG_SELECT           = 0xF3;
-static const int STATUS_TUNE_REQUEST          = 0xF6;
-static const int STATUS_END_PROPRIETARY       = 0xF7;
-static const int STATUS_SYNC                  = 0xF8;
-static const int STATUS_START                 = 0xFA;
-static const int STATUS_CONTINUE              = 0xFB;
-static const int STATUS_STOP                  = 0xFC;
-static const int STATUS_ACTIVE_SENSE          = 0xFE;
-static const int STATUS_RESET                 = 0xFF;
+// These are midi status message types are defined in MidiSpec.h
 
 union EVENT_t {
     uint32 i;
@@ -220,17 +201,16 @@ void USBMidi::dispatchPacket(uint32 p)
     union EVENT_t e;
     
     e.i=p;
-    // !!!!!!!!!!!!!!!!   FIX THIS VERY VERY SHORTLY !!!!!!!!!!!!!!
+    // !!!!!!!!!!!!!!!!  Add a sysex handler  FIX THIS VERY VERY SHORTLY !!!!!!!!!!!!!!
     if (recvMode_ & MODE_PROPRIETARY
         && CIN_IS_SYSEX(e.p.cin))
     {
-        /* If proprietary handling compiled in, just pass all data received
-         *  after a START_PROPRIETARY event to proprietary_decode
-         *  until get an END_PROPRIETARY event
+        /* If sysex handling compiled in, just pass all data received
+         * to the sysex handler
          */
         
 #ifdef CONFIG_MIDI_PROPRIETARY
-        proprietaryDecode(byte);
+//        handleSysex(p);
 #endif
         
         return;
@@ -249,6 +229,7 @@ void USBMidi::dispatchPacket(uint32 p)
                      handleSongSelect(e.p.midi1);
                      break;
                  case MIDIv1_MTC_QUARTER_FRAME:
+                     // reference library doesnt handle quarter frame.
                      break;
              }
             break;
@@ -296,7 +277,7 @@ void USBMidi::dispatchPacket(uint32 p)
                 case MIDIv1_RESET:
                     handleReset();
                     break;
-                case STATUS_TUNE_REQUEST:
+                case MIDIv1_TUNE_REQUEST:
                     handleTuneRequest();
                     break;
 
@@ -315,7 +296,7 @@ void USBMidi::poll(void)
     }
 }
 
-static union EVENT_t outPacket;
+static union EVENT_t outPacket; // since we only use one at a time no point in reallocating it
 
 // Send Midi NOTE OFF message to a given channel, with note 0-127 and velocity 0-127
 void USBMidi::sendNoteOff(unsigned int channel, unsigned int note, unsigned int velocity)
@@ -495,14 +476,6 @@ void USBMidi::sendReset(void)
 }
 
 
-// Open the serial port and begin processing.
-//void Midi::begin(unsigned int channel, unsigned long baud)
-//{
-//    channelIn_ = channel;
-//    serial_.begin(baud);
-//}
-
-
 // Set (package-specific) parameters for the Midi instance
 void USBMidi::setParam(unsigned int param, unsigned int val)
 {
@@ -529,7 +502,6 @@ unsigned int USBMidi::getParam(unsigned int param)
     
     return 0;
 }
-
 
 // Placeholders.  You should subclass the Midi base class and define these to have your
 //  version called.
